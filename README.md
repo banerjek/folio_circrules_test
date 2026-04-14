@@ -13,36 +13,18 @@ These instructions explain how to load this repository as an unpacked extension 
 2. Click the green **Code** button
 3. Select **Download ZIP**
 4. Save the file to your computer
-5. Extract the ZIP file
-   - On Windows: Right-click → Extract All
-   - On macOS: Double-click the ZIP file
 
 After extraction, you should have a folder containing the repository files.
 
----
-
-## 2. Verify Required Files
-
-Open the extracted folder and confirm it contains:
-
-- `manifest.json` (required)
-- `chrome.js` (or other files referenced in the manifest)
-
-Also check:
-- `manifest.json` includes `"manifest_version": 2` or `3` (3 is recommended)
-- All files referenced inside `manifest.json` exist in the folder
-
----
-
-## 3. Open Chrome Extensions Page
+## 2. Open Chrome Extensions Page
 
 1. Open Google Chrome
 2. In the address bar, go to: chrome://extensions/
-3. Turn on **Developer mode** using the toggle in the top right corner
+3. Turn on **Developer mode** using the toggle in the top right corner or by pressing F12
 
 ---
 
-## 4. Load the Extension
+## 3. Load the Extension
 
 1. Click the **Load unpacked** button
 2. In the file picker, select the extracted repository folder (the one containing `manifest.json`)
@@ -50,7 +32,7 @@ Also check:
 
 ---
 
-## 5. Confirm It Loaded
+## 4. Confirm It Loaded
 
 - The extension should now appear in the extensions list
 - If the extension provides a UI:
@@ -61,7 +43,7 @@ Also check:
 
 ---
 
-## 6. Troubleshooting
+## 5. Troubleshooting
 
 If the extension does not load or shows errors:
 
@@ -69,23 +51,10 @@ If the extension does not load or shows errors:
 2. Find the extension and click **Errors**
 
 Common issues:
-- Missing files referenced in `manifest.json`
-- Incorrect file paths
-- Unsupported manifest version
 - Missing or incorrect permissions
 
----
 
-## 7. Reload After Changes
-
-If you edit any files:
-
-1. Return to chrome://extensions/
-2. Click **Reload** on the extension
-
----
-
-## 8. Debugging
+## 6. Debugging
 
 - For background scripts (Manifest v3):
   - Click **Service Worker** on the extension card to open DevTools
@@ -94,14 +63,3 @@ If you edit any files:
   - Open the webpage where the script runs
   - Right-click → Inspect
   - Check the Console tab for logs or errors
-
----
-
-## Summary
-
-Google Chrome treats the extracted folder as a complete extension:
-- `manifest.json` → configuration
-- JavaScript files → behavior
-- HTML/CSS → user interface
-
----
