@@ -27,7 +27,7 @@ After extraction, you should have a folder containing the repository files.
 ## 3. Load the Extension
 
 1. Click the **Load unpacked** button
-2. In the file picker, select the extracted repository folder (the one containing `manifest.json`)
+2. In the file picker, select the zipped repository folder 
 3. Click **Select Folder**
 
 ---
