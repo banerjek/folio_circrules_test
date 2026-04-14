@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "FOLIO Circulation Rules Checker",
+  "version": "0.9",
+  "description": "In-page modal to resolve FOLIO circulation rule lines using the active UI session.",
+
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "cookies"
+  ],
+
+  "optional_host_permissions": [
+    "<all_urls>"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "action": {
+    "default_title": "FOLIO Circulation Rules"
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "lib/folio-session-page.js",
+        "modal.css"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
