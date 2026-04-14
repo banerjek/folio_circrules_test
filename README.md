@@ -14,23 +14,17 @@ These instructions explain how to load this repository as an unpacked extension 
 3. Select **Download ZIP**
 4. Save the file to your computer
 
-After extraction, you should have a folder containing the repository files.
-
 # 2. Open Chrome Extensions Page
 
 1. Open Google Chrome
 2. In the address bar, go to: chrome://extensions/
 3. Turn on **Developer mode** using the toggle in the top right corner or by pressing F12
 
----
-
 # 3. Load the Extension
 
 1. Click the **Load unpacked** button
 2. In the file picker, select the zipped repository folder 
 3. Click **Select Folder**
-
----
 
 # 4. Confirm It Loaded
 
@@ -40,8 +34,6 @@ After extraction, you should have a folder containing the repository files.
 	- You will need to give it permissions for every FOLIO site you want to run it on
   - Pin the extension if desired
   - Open and test its functionality
-
----
 
 # 5. Troubleshooting
 
@@ -53,13 +45,3 @@ If the extension does not load or shows errors:
 Common issues:
 - Missing or incorrect permissions
 
-
-# 6. Debugging
-
-- For background scripts (Manifest v3):
-  - Click **Service Worker** on the extension card to open DevTools
-
-- For content scripts:
-  - Open the webpage where the script runs
-  - Right-click → Inspect
-  - Check the Console tab for logs or errors
