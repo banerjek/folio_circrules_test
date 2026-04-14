@@ -7,7 +7,7 @@ These instructions explain how to load this repository as an unpacked extension 
 
 ---
 
-## 1. Download the Repository
+# 1. Download the Repository
 
 1. Go to the repository page on GitHub
 2. Click the green **Code** button
@@ -16,7 +16,7 @@ These instructions explain how to load this repository as an unpacked extension 
 
 After extraction, you should have a folder containing the repository files.
 
-## 2. Open Chrome Extensions Page
+# 2. Open Chrome Extensions Page
 
 1. Open Google Chrome
 2. In the address bar, go to: chrome://extensions/
@@ -24,7 +24,7 @@ After extraction, you should have a folder containing the repository files.
 
 ---
 
-## 3. Load the Extension
+# 3. Load the Extension
 
 1. Click the **Load unpacked** button
 2. In the file picker, select the zipped repository folder 
@@ -32,7 +32,7 @@ After extraction, you should have a folder containing the repository files.
 
 ---
 
-## 4. Confirm It Loaded
+# 4. Confirm It Loaded
 
 - The extension should now appear in the extensions list
 - If the extension provides a UI:
@@ -43,7 +43,7 @@ After extraction, you should have a folder containing the repository files.
 
 ---
 
-## 5. Troubleshooting
+# 5. Troubleshooting
 
 If the extension does not load or shows errors:
 
@@ -54,7 +54,7 @@ Common issues:
 - Missing or incorrect permissions
 
 
-## 6. Debugging
+# 6. Debugging
 
 - For background scripts (Manifest v3):
   - Click **Service Worker** on the extension card to open DevTools
