@@ -29,11 +29,9 @@ These instructions explain how to load this repository as an unpacked extension 
 # 4. Confirm It Loaded
 
 - The extension should now appear in the extensions list
-- If the extension provides a UI:
-  - Click the puzzle icon in Chrome
-	- You will need to give it permissions for every FOLIO site you want to run it on
-  - Pin the extension if desired
-  - Open and test its functionality
+- Click the puzzle icon in Chrome
+- You will need to give it permissions for every FOLIO site you want to run it on
+- Pin the extension if desired
 
 # 5. Troubleshooting
 
@@ -45,3 +43,7 @@ If the extension does not load or shows errors:
 Common issues:
 - Missing or incorrect permissions
 
+# 6. Known problems
+
+- Often does not detect tenant -- you may be asked to provide this
+- Is not priority aware -- might give a list of matching rules that must be evaluated manually
