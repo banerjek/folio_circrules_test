@@ -10,14 +10,24 @@ FolioSession.setLogPrefix("[CircRules]");
 // ======================== ICON CLICK → DETECT + INJECT ========================
 
 chrome.action.onClicked.addListener(async function (tab) {
-  // 1. Ensure host permission for the active tab's origin so that cookie
-  //    detection and script injection work.
+  // 1. Ensure host permission for the active tab's origin AND likely gateway
+  //    siblings so cookie detection can find folioAccessToken on the API domain.
   var tabUrl = (tab && tab.url) || "";
   if (tabUrl) {
     try {
       var u = new URL(tabUrl);
+      var host = u.hostname;
+      var parts = host.split(".");
+      var first = parts[0];
+      var rest = parts.slice(1).join(".");
+      var origins = [u.origin + "/*"];
+      // Add api- prefix and -okapi suffix variants (covers EBSCO and dev.folio.org patterns)
+      if (!isGatewayHost(host)) {
+        origins.push(u.protocol + "//api-" + first + "." + rest + "/*");
+        origins.push(u.protocol + "//" + first + "-okapi." + rest + "/*");
+      }
       await new Promise(function (resolve) {
-        chrome.permissions.request({ origins: [u.origin + "/*"] }, resolve);
+        chrome.permissions.request({ origins: origins }, resolve);
       });
     } catch (e) {
       console.warn("[CircRules] Permission request failed:", e.message);
