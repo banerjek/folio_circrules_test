@@ -9,10 +9,9 @@ These instructions explain how to load this repository as an unpacked extension 
 
 **1. Download the Repository**
 
-1. Go to the repository page on GitHub
-2. Click the green **Code** button
-3. Select **Download ZIP**
-4. Save the file to your computer
+1. Click the green **Code** button above
+2. Select **Download ZIP**
+3. Save the file to your computer
 
 **2. Open Chrome Extensions Page**
 
