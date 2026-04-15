@@ -12,37 +12,26 @@ These instructions explain how to load this repository as an unpacked extension 
 1. Click the green **Code** button above
 2. Select **Download ZIP**
 3. Save the file to your computer
+4. Unzip the file
+5. Enter the main directory of the unzipped archive
+6. Zip the folder within that main directory named "folio_circrules_test-main"
 
-**2. Open Chrome Extensions Page**
+**2. Load the Extension**
 
 1. Open Google Chrome
 2. In the address bar, go to: chrome://extensions/
-3. Turn on **Developer mode** using the toggle in the top right corner or by pressing F12
-
-**3. Load the Extension**
-
-1. Click the **Load unpacked** button
-2. In the file picker, select the zipped repository folder 
+3. Click the **Load unpacked** button
+4. In the file picker, select the zipped repository folder 
 3. Click **Select Folder**
 
-**4. Confirm It Loaded**
+**3. Confirm It Loaded**
 
 - The extension should now appear in the extensions list
 - Click the puzzle icon in Chrome
 - You will need to give it permissions for every FOLIO site you want to run it on
 - Pin the extension if desired
 
-**5. Troubleshooting**
+**4. Known problems**
 
-If the extension does not load or shows errors:
-
-1. Go to chrome://extensions/
-2. Find the extension and click **Errors**
-
-Common issues:
-- Missing or incorrect permissions
-
-**6. Known problems**
-
-- Often does not detect tenant -- you may be asked to provide this
+- May not detect tenant -- you may be asked to provide this
 - Is not priority aware -- might give a list of matching rules that must be evaluated manually
