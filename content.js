@@ -3,147 +3,197 @@
 
   console.log("FOLIO Circulation Rules: starting");
 
-  const uiUrl = new URL(window.location.href);
-  const apiHost = uiUrl.hostname.startsWith("api-")
-    ? uiUrl.hostname
-    : `api-${uiUrl.hostname}`;
-
-  const apiBase = `${uiUrl.protocol}//${apiHost}`;
-
   /* ----------------------------------------------------
-   * LOAD SAVED TENANT (chrome.storage.local)
+   * SESSION — retrieved from the background service worker
    * -------------------------------------------------- */
 
-  let savedTenant = "";
-  try {
-    const stored = await chrome.storage.local.get("folioTenant");
-    if (stored.folioTenant) {
-      savedTenant = stored.folioTenant;
-      console.log("Loaded saved tenant:", savedTenant);
-    }
-  } catch (e) {
-    console.warn("Could not load saved tenant:", e);
+  var session = await new Promise(function (resolve) {
+    chrome.runtime.sendMessage({ type: "circrules_getSession" }, resolve);
+  });
+
+  var sessionUrl = (session && session.url) || null;
+  var sessionTenant = (session && session.tenant) || null;
+  var sessionOrigin = (session && session.origin) || null;
+
+  console.log("FOLIO Circulation Rules session:", session);
+
+  /* ----------------------------------------------------
+   * API HELPER — proxied through background service worker
+   * -------------------------------------------------- */
+
+  function apiFetch(path, params) {
+    return new Promise(function (resolve, reject) {
+      chrome.runtime.sendMessage({
+        type: "circrules_apiFetch",
+        method: "GET",
+        path: path,
+        params: params || null,
+        sessionUrl: sessionUrl,
+        sessionTenant: sessionTenant,
+      }, function (resp) {
+        if (!resp) { reject(new Error("No response from background")); return; }
+        if (resp._error) { reject(new Error(resp.message)); return; }
+        if (resp.ok === false) {
+          reject(new Error("FOLIO API " + resp.status + " " + resp.statusText + "\n" + (resp.body || "").slice(0, 500)));
+          return;
+        }
+        resolve(resp.data);
+      });
+    });
   }
 
   /* ----------------------------------------------------
    * MODAL UI
    * -------------------------------------------------- */
 
-  const root = document.createElement("div");
+  var root = document.createElement("div");
   root.id = "folio-circ-modal-root";
   document.body.appendChild(root);
-  const shadow = root.attachShadow({ mode: "open" });
+  var shadow = root.attachShadow({ mode: "open" });
 
-  shadow.innerHTML = `
-    <div class="overlay">
-      <div class="modal">
-        <h2>Circulation Rule Checker</h2>
+  var statusLine = "";
+  if (sessionTenant && sessionUrl) {
+    statusLine = "Session detected — tenant: " + sessionTenant + "  gateway: " + sessionUrl;
+  } else if (sessionTenant) {
+    statusLine = "Tenant detected: " + sessionTenant + " (no API URL — configure in Settings)";
+  } else {
+    statusLine = "No session detected. Configure tenant and API URL in Settings.";
+  }
 
-        <label>FOLIO Tenant</label>
-        <input id="tenantInput"
-               placeholder="e.g. fs00009876"
-               value="${savedTenant}">
-        <div style="font-size:12px;color:#555;margin-top:4px">
-          Tenant is required. It will be remembered for next time.
-        </div>
-
-        <label>User barcode</label>
-        <input id="userBarcode">
-
-        <label>Item barcode</label>
-        <input id="itemBarcode">
-
-        <div class="buttons">
-          <button id="run">Run</button>
-          <button id="close">Close</button>
-        </div>
-
-        <pre id="out">Ready.</pre>
-      </div>
-    </div>
-  `;
+  shadow.innerHTML =
+    '<div class="overlay">' +
+      '<div class="modal">' +
+        '<h2>Circulation Rule Checker</h2>' +
+        '<div id="sessionStatus" style="font-size:12px;margin-bottom:8px;color:#555"></div>' +
+        '<div class="tabs">' +
+          '<button class="tab active" data-tab="check">Check Rules</button>' +
+          '<button class="tab" data-tab="settings">Settings</button>' +
+        '</div>' +
+        '<div id="tab-check" class="tab-content">' +
+          '<label>User barcode</label>' +
+          '<input id="userBarcode">' +
+          '<label>Item barcode</label>' +
+          '<input id="itemBarcode">' +
+          '<div class="buttons">' +
+            '<button id="run">Run</button>' +
+            '<button id="close">Close</button>' +
+          '</div>' +
+          '<pre id="out">Ready.</pre>' +
+        '</div>' +
+        '<div id="tab-settings" class="tab-content" style="display:none">' +
+          '<label>FOLIO API Gateway</label>' +
+          '<input id="urlInput" placeholder="e.g. https://api-mytenant.folio.ebsco.com">' +
+          '<label>FOLIO Tenant</label>' +
+          '<input id="tenantInput" placeholder="e.g. fs00009876">' +
+          '<div style="font-size:12px;color:#555;margin-top:4px">' +
+            'Auto-detected from your FOLIO session. Override here if needed.' +
+          '</div>' +
+          '<div class="buttons">' +
+            '<button id="closeSetting">Close</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
 
   fetch(chrome.runtime.getURL("modal.css"))
-    .then(r => r.text())
-    .then(css => {
-      const style = document.createElement("style");
+    .then(function (r) { return r.text(); })
+    .then(function (css) {
+      var style = document.createElement("style");
       style.textContent = css;
       shadow.appendChild(style);
     });
 
-  const $ = id => shadow.getElementById(id);
-  $("close").onclick = () => root.remove();
+  function $(id) { return shadow.getElementById(id); }
+
+  $("sessionStatus").textContent = statusLine;
+  $("urlInput").value = sessionUrl || sessionOrigin || "";
+  $("tenantInput").value = sessionTenant || "";
+  $("close").onclick = function () { root.remove(); };
+  $("closeSetting").onclick = function () { root.remove(); };
+
+  /* --- Tab switching --- */
+  var tabs = shadow.querySelectorAll(".tab");
+  tabs.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      tabs.forEach(function (t) { t.classList.remove("active"); });
+      btn.classList.add("active");
+      shadow.querySelectorAll(".tab-content").forEach(function (tc) {
+        tc.style.display = "none";
+      });
+      shadow.getElementById("tab-" + btn.getAttribute("data-tab")).style.display = "";
+    });
+  });
 
   /* ----------------------------------------------------
    * MAIN LOGIC
    * -------------------------------------------------- */
 
-  $("run").onclick = async () => {
+  $("run").onclick = async function () {
     try {
       $("out").textContent = "Running…";
 
-      const tenant = $("tenantInput").value.trim();
+      var tenant = $("tenantInput").value.trim();
+      var url = $("urlInput").value.trim();
       if (!tenant) {
-        throw new Error("Tenant is required (e.g. fs00009876).");
+        throw new Error("Tenant is required. Configure it in the Settings tab.");
+      }
+      if (!url) {
+        throw new Error("FOLIO API Gateway URL is required. Configure it in the Settings tab.");
       }
 
-      // ✅ Persist tenant for next time
-      await chrome.storage.local.set({ folioTenant: tenant });
-      console.log("Saved tenant:", tenant);
+      // Update session for this run
+      sessionUrl = url;
+      sessionTenant = tenant;
 
-      window.folioApi.setSession({
-        okapiUrl: apiBase,
-        tenant,
-        token: null
-      });
-
-      const userBarcode = $("userBarcode").value.trim();
-      const itemBarcode = $("itemBarcode").value.trim();
+      var userBarcode = $("userBarcode").value.trim();
+      var itemBarcode = $("itemBarcode").value.trim();
       if (!userBarcode || !itemBarcode) {
         throw new Error("Both barcodes are required.");
       }
 
-      const user = (await folioApi.folioGet(
-        `/users?query=barcode==${encodeURIComponent(userBarcode)}`
-      )).users?.[0];
+      var userData = await apiFetch("/users", { query: "barcode==" + userBarcode });
+      var user = (userData.users || [])[0];
       if (!user) throw new Error("User not found.");
 
-      const item = (await folioApi.folioGet(
-        `/inventory/items?query=barcode==${encodeURIComponent(itemBarcode)}`
-      )).items?.[0];
+      var itemData = await apiFetch("/inventory/items", { query: "barcode==" + itemBarcode });
+      var item = (itemData.items || [])[0];
       if (!item) throw new Error("Item not found.");
 
-      const params =
-        `item_type_id=${item.materialType.id}` +
-        `&loan_type_id=${item.permanentLoanType.id}` +
-        `&patron_type_id=${user.patronGroup}` +
-        `&location_id=${item.effectiveLocation.id}`;
+      var ruleParams = {
+        item_type_id: item.materialType.id,
+        loan_type_id: item.permanentLoanType.id,
+        patron_type_id: user.patronGroup,
+        location_id: item.effectiveLocation.id,
+      };
 
-      const endpoints = [
+      var endpoints = [
         "/circulation/rules/loan-policy-all",
         "/circulation/rules/overdue-fine-policy-all",
         "/circulation/rules/lost-item-policy-all",
         "/circulation/rules/request-policy-all"
       ];
 
-      const ruleSets = await Promise.all(
-        endpoints.map(ep =>
-          folioApi
-            .folioGet(`${ep}?${params}`)
-            .then(r =>
-              r.circulationRuleMatches.map(m => m.circulationRuleLine)
-            )
-        )
+      var ruleSets = await Promise.all(
+        endpoints.map(function (ep) {
+          return apiFetch(ep, ruleParams).then(function (r) {
+            return (r.circulationRuleMatches || []).map(function (m) {
+              return m.circulationRuleLine;
+            });
+          });
+        })
       );
 
-      const counts = {};
-      ruleSets.flat().forEach(line => {
-        counts[line] = (counts[line] || 0) + 1;
+      var counts = {};
+      ruleSets.forEach(function (lines) {
+        lines.forEach(function (line) {
+          counts[line] = (counts[line] || 0) + 1;
+        });
       });
 
-      const matches = Object.entries(counts)
-        .filter(([, c]) => c === 4)
-        .map(([l]) => l);
+      var matches = [];
+      Object.keys(counts).forEach(function (line) {
+        if (counts[line] === 4) matches.push(line);
+      });
 
       $("out").textContent = matches.length
         ? "✅ Matching circulation rule line(s):\n\n" + matches.join("\n")
