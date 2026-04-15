@@ -120,6 +120,59 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
   // folioDetectCookies is handled by folio-session-background.js
 });
 
+// ======================== ECS TENANT SWITCH DETECTION ========================
+// In ECS FOLIO environments, users can switch tenants within the UI.
+// Watch for cookie changes that signal a tenant context switch and update
+// the stored session so the content script stays in sync.
+
+chrome.cookies.onChanged.addListener(function (changeInfo) {
+  if (changeInfo.removed) return;
+
+  var cookie = changeInfo.cookie;
+  var name = cookie.name;
+
+  // Only care about FOLIO session-related cookies
+  if (name !== "folioAccessToken" && name !== "okapiToken" &&
+      name !== "folioTenant" && name !== "okapiTenant") return;
+
+  var newTenant = null;
+
+  if (name === "folioTenant" || name === "okapiTenant") {
+    newTenant = cookie.value;
+  } else {
+    // Extract tenant from JWT
+    try {
+      var parts = cookie.value.split(".");
+      if (parts.length >= 2) {
+        var payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+        if (payload.iss) {
+          try {
+            var issPath = new URL(payload.iss).pathname;
+            var segments = issPath.split("/").filter(Boolean);
+            if (segments.length >= 2 && segments[segments.length - 2] === "realms") {
+              newTenant = segments[segments.length - 1];
+            }
+          } catch (_) { /* not a URL */ }
+        }
+      }
+    } catch (_) { /* decode error */ }
+  }
+
+  if (!newTenant) return;
+
+  // Update stored session with the new tenant
+  chrome.storage.session.get("_circrules_session", function (data) {
+    var session = data._circrules_session;
+    if (!session) return;
+    if (session.tenant === newTenant) return;
+
+    console.log("[CircRules] ECS tenant switch detected:", session.tenant, "→", newTenant);
+    session.tenant = newTenant;
+    FolioSession.setTenant(newTenant);
+    chrome.storage.session.set({ _circrules_session: session });
+  });
+});
+
 // ======================== GATEWAY URL HELPERS ========================
 
 // Known API gateway prefixes and suffixes on the first subdomain label.
@@ -171,10 +224,8 @@ async function handleApiFetch(msg) {
   if (gwOrigin) {
     var hasPermission = await FolioSession.hasHostPermission(gwOrigin);
     if (!hasPermission) {
-      // Try requesting — may fail without user gesture, but worth attempting
-      try {
-        await FolioSession.ensureHostPermission(gwOrigin);
-      } catch (_) {}
+      console.warn("[CircRules] No host permission for", gwOrigin,
+        "— grant access by clicking the extension icon while on the FOLIO tab.");
     }
   }
 
