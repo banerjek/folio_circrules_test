@@ -111,6 +111,33 @@
   $("close").onclick = function () { root.remove(); };
   $("closeSetting").onclick = function () { root.remove(); };
 
+  /* --- ECS tenant switch detection --- */
+  chrome.storage.onChanged.addListener(function (changes, areaName) {
+    if (areaName !== "session" || !changes._circrules_session) return;
+    var newSession = changes._circrules_session.newValue;
+    if (!newSession) return;
+
+    var newTenant = newSession.tenant || null;
+    var newUrl = newSession.url || null;
+
+    if (newTenant && newTenant !== sessionTenant) {
+      console.log("FOLIO Circulation Rules: ECS tenant switch detected →", newTenant);
+      sessionTenant = newTenant;
+      $("tenantInput").value = newTenant;
+    }
+    if (newUrl && newUrl !== sessionUrl) {
+      sessionUrl = newUrl;
+      $("urlInput").value = newUrl;
+    }
+
+    // Refresh status line
+    if (sessionTenant && sessionUrl) {
+      $("sessionStatus").textContent = "Session detected — tenant: " + sessionTenant + "  gateway: " + sessionUrl;
+    } else if (sessionTenant) {
+      $("sessionStatus").textContent = "Tenant detected: " + sessionTenant + " (no API URL — configure in Settings)";
+    }
+  });
+
   /* --- Tab switching --- */
   var tabs = shadow.querySelectorAll(".tab");
   tabs.forEach(function (btn) {
