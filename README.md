@@ -21,7 +21,7 @@ These instructions explain how to load this repository as an unpacked extension 
 1. Open Google Chrome
 2. In the address bar, go to: chrome://extensions/
 3. Click the **Load unpacked** button
-4. In the file picker, select the zipped repository folder 
+4. In the file picker, select the zipped "folio_circrules_test-main.zip" file
 3. Click **Select Folder**
 
 **3. Confirm It Loaded**
