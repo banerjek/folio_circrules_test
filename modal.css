@@ -20,7 +20,18 @@
 }
 
 label { margin-top: 8px; font-weight: bold; }
-input, select { width: 100%; padding: 6px; }
+input, select { width: 100%; padding: 6px; box-sizing: border-box; }
+.tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+.tab {
+  flex: none;
+  padding: 6px 14px;
+  cursor: pointer;
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 4px 4px 0 0;
+  font-weight: bold;
+}
+.tab.active { background: white; border-bottom-color: white; }
 .buttons { display: flex; gap: 8px; margin-top: 10px; }
 button { flex: 1; padding: 8px; cursor: pointer; }
 pre {
