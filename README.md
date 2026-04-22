@@ -14,21 +14,20 @@ These instructions explain how to load this repository as an unpacked extension 
 3. Save the file to your computer
 4. Unzip the file
 5. Enter the main directory of the unzipped archive
-6. Zip the folder within that main directory named "folio_circrules_test-main"
 
 **2. Load the Extension**
 
 1. Open Google Chrome
-2. In the address bar, go to: chrome://extensions/
-3. Click the **Load unpacked** button
-4. In the file picker, select the zipped "folio_circrules_test-main.zip" file
-3. Click **Select Folder**
+2. Press F12 to enter Developer Mode
+3. In the address bar, go to: chrome://extensions/
+4. Click the **Load unpacked** button
+5. In the picker, select the  "folio_circrules_test-main" folder
 
 **3. Confirm It Loaded**
 
 - The extension should now appear in the extensions list
 - Click the puzzle icon in Chrome
-- You will need to give it permissions for every FOLIO site you want to run it on
+- You will need to give it permissions for every FOLIO site you want to run it on (click on the extension when on the site)
 - Pin the extension if desired
 
 **4. Known problems**
